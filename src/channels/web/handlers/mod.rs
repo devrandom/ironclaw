@@ -17,4 +17,5 @@ pub mod extensions;
 pub mod settings;
 #[allow(dead_code)]
 pub mod static_files;
+pub mod frontend;
 pub mod webhooks;
