@@ -679,9 +679,10 @@ pub async fn jobs_events_handler(
             }
         }
         Err(e) => {
+            tracing::error!(job_id = %job_id, error = %e, "Database error checking job ownership");
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Database error: {}", e),
+                "Database error".to_string(),
             ));
         }
     };
@@ -689,10 +690,13 @@ pub async fn jobs_events_handler(
         return Err((StatusCode::NOT_FOUND, "Job not found".to_string()));
     }
 
-    let events = store
-        .list_job_events(job_id, None)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let events = store.list_job_events(job_id, None).await.map_err(|e| {
+        tracing::error!(job_id = %job_id, error = %e, "Database error listing job events");
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Database error".to_string(),
+        )
+    })?;
 
     let events_json: Vec<serde_json::Value> = events
         .into_iter()
